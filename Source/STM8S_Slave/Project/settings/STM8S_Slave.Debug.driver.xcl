@@ -1,10 +1,10 @@
 "-p" 
 
-"D:\App\IAR\stm8\config\ddf\iostm8.ddf" 
+"D:\App\IAR\stm8\config\ddf\iostm8s103f3.ddf" 
 
 "--mcuname" 
 
-"STM8S208MB" 
+"STM8S103F3P" 
 
 
 

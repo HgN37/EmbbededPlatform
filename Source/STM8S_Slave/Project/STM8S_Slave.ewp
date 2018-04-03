@@ -16,7 +16,7 @@
                 <debug>1</debug>
                 <option>
                     <name>GenDeviceSelectMenu</name>
-                    <state>UnspecifiedSTM8	STM8 - Unspecified</state>
+                    <state>STM8S103F3P	STM8S103F3P</state>
                 </option>
                 <option>
                     <name>GenCodeModel</name>
@@ -610,7 +610,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$TOOLKIT_DIR$\config\lnkstm8.icf</state>
+                    <state>$TOOLKIT_DIR$\config\lnkstm8s103f3.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -1610,6 +1610,9 @@
     <group>
         <name>StdPeriph</name>
         <file>
+            <name>$PROJ_DIR$\..\StdPeriph\src\stm8s_adc1.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\StdPeriph\src\stm8s_clk.c</name>
         </file>
         <file>
@@ -1649,6 +1652,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\User\Driver\led.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\User\Driver\random.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\User\Driver\ticker.c</name>

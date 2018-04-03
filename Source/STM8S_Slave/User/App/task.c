@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SLAVE_SENSOR
+#define SLAVE_RELAY
 
 frame_t frameTx;
 frame_t frameRx;
@@ -21,18 +21,12 @@ void taskInit(void) {
 
     //! Init led
     ledInit(LED_1);
-    ledInit(LED_2);
-    ledInit(LED_3);
 
-#ifdef SLAVE_SENSOR
-    ds18b20Init();
-    buttonInit(WATER_SENSOR);
-#endif
+    //! Init random
+    randomInit();
+
 #ifdef SLAVE_RELAY
     deviceInit(DEVICE_1);
-    deviceInit(DEVICE_2);
-    deviceInit(DEVICE_3);
-    deviceInit(DEVICE_4);
 #endif
 
     //! Clear serial frame
@@ -40,16 +34,52 @@ void taskInit(void) {
     serialClearFrame(&frameRx);
 
     regInit();
-    //! Set sensor slave address 0x02
-#ifdef SLAVE_SENSOR
-    regWrite(0x30, 0x02);
-#endif
+
+    // Unactive addr = 0
+    regWrite(REG_ADDR, 0x00);
+    regWrite(REG_STATUS, randomGenerate());
+    randomDeInit();
+
+    // Hardware reg
 #ifdef SLAVE_RELAY
-    regWrite(0x30, 0x01);
+    regWrite(REG_HARDWARE, 0x01);
 #endif
+
 }
 
-void taskSerialCmd() {
+bool taskActivate(void) {
+    if(EXIT_SUCCESS != serialGetFrame(&frameRx)) {
+        serialClearFrame(&frameTx);
+        serialClearFrame(&frameRx);
+        return false;
+    }
+    if(frameRx.addr != regRead(REG_ADDR)) {
+        return false;
+    }
+    if(frameRx.func != SERIAL_FUNC_ACTIVE) {
+        return false;
+    }
+    if(frameRx.num != 2) {
+        return false;
+    }
+    if(frameRx.data[0] != regRead(REG_STATUS)) {
+        return false;
+    }
+    regWrite(REG_ADDR, frameRx.data[1]);
+    // Send respond
+    frameTx.addr = regRead(REG_ADDR);
+    frameTx.func = frameRx.func;
+    frameTx.num = 2;
+    frameTx.data = (uint8_t*)malloc(frameTx.num);
+    frameTx.data[0] = regRead(REG_HARDWARE);
+    frameTx.data[1] = regRead(REG_VERSION);
+    serialSendFrame(&frameTx);
+    serialClearFrame(&frameTx);
+    serialClearFrame(&frameRx);
+    return true;
+}
+
+void taskSerialCmd(void) {
     uint8_t count;
     if(EXIT_SUCCESS != serialGetFrame(&frameRx)) {
         serialClearFrame(&frameTx);
@@ -96,7 +126,7 @@ void taskReg2Dev(void) {
         DEVICE_3,
         DEVICE_4
     };
-    for(count = 0; count < 4; count++) {
+    for(count = 0; count < 2; count++) {
         if(regRead(0x10 + count) == 0x64) {
             deviceOn(relay[count]);
         }
@@ -139,10 +169,10 @@ void taskDev2Reg(void) {
         DEVICE_3,
         DEVICE_4
     };
-    for(count = 0; count < 4; count++) {
+    for(count = 0; count < 2; count++) {
         relay[count] = deviceRead(relay[count]);
     }
-    for(count = 0; count < 4; count++) {
+    for(count = 0; count < 2; count++) {
         if(relay[count] == GPIO_LOW) {
             regWrite(0x10 + count, 0x64);
         }

@@ -2100,6 +2100,9 @@
     <group>
         <name>StdPeriph</name>
         <file>
+            <name>$PROJ_DIR$\..\StdPeriph\src\stm8s_adc1.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\StdPeriph\src\stm8s_clk.c</name>
         </file>
         <file>
@@ -2139,6 +2142,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\User\Driver\led.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\User\Driver\random.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\User\Driver\ticker.c</name>

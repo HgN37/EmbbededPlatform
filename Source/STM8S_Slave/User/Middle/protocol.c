@@ -16,9 +16,9 @@ uint8_t serialGetFrame(frame_t* frame) {
         while((uartAvailable() == 0) & (timeout != 0)) timeout--;
         if(timeout == 0) return EXIT_FAILURE;
         frame->addr = uartRead();
-        if(frame->addr != regRead(REG_ADDR)) {
+        /*if(frame->addr != regRead(REG_ADDR)) {
             return EXIT_FAILURE;
-        }
+        }*/
         crc = uCaclCrcByte(crc, frame->addr);
         while((uartAvailable() == 0) & (timeout != 0)) timeout--;
         if(timeout == 0) return EXIT_FAILURE;
@@ -33,7 +33,7 @@ uint8_t serialGetFrame(frame_t* frame) {
         frame->num = uartRead();
         crc = uCaclCrcByte(crc, frame->num);
         int i;
-        if(frame->func == SERIAL_FUNC_WRITE) {
+        if(frame->func != SERIAL_FUNC_READ) {
             frame->data = (uint8_t*)malloc(frame->num);
             for(i = 0; i < frame->num; i++) {
                 while((uartAvailable() == 0) & (timeout != 0)) timeout--;

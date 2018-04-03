@@ -9,9 +9,11 @@
 #include "ds18b20.h"
 #include "ticker.h"
 #include "defineApp.h"
+#include "random.h"
 
 void taskInit(void);
-void taskSerialCmd();
+bool taskActivate(void);
+void taskSerialCmd(void);
 void taskReg2Dev(void);
 void taskDev2Reg(void);
 

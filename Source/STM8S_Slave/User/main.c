@@ -3,7 +3,7 @@
 void main( void )
 {
     taskInit();
-
+    while(false == taskActivate());
     while(1) {
         taskDev2Reg();
         taskSerialCmd();

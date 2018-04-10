@@ -17,10 +17,12 @@ class RS485():
 	def send(self, array):
 		self.ser.write(bytearray(array))
 		self.ser.flush()
+	def available(self):
+		return self.ser.in_waiting
 	def get(self):
-		if self.ser.in_waiting:
+		if self.available():
 			byte = ord(self.ser.read())
-			print("0x{:02x}".format(byte))
+			#print("0x{:02x}".format(byte))
 			return byte
 		
 class Modbus(RS485):
@@ -51,14 +53,82 @@ class Modbus(RS485):
 			crc = self.crc_generate(crc, data[byte])
 		frame.append((crc & 0xFF00) >> 8)
 		frame.append((crc & 0x00FF))
-		print(frame)
+		# print(frame)
 		self.send(frame)
+	def get_frame(self, num):
+		frame = {'ADDR':0, 'FUNC':0, 'REG':0, 'NUM':0, 'DATA':[], 'CRC1':0, 'CRC2':0}
+		if self.available():
+			crc = 0xFFFF
+			time_out = 0xFFFF
+			while(self.available() == 0 and time_out != 0 ):
+				time_out = time_out - 1
+			if time_out == 0:
+				print('Timeout1')
+				return 'ERROR'
+			frame['ADDR'] = self.get()
+			crc = self.crc_generate(crc, frame['ADDR'])
+			time_out = 0xFFFF
+			while(self.available() == 0 and time_out != 0 ):
+				time_out = time_out - 1
+			if time_out == 0:
+				print('Timeout2')
+				return 'ERROR'
+			frame['FUNC'] = self.get()
+			crc = self.crc_generate(crc, frame['FUNC'])
+			'''
+			time_out = 0xFFFF
+			while(self.available() == 0 and time_out != 0 ):
+				time_out = time_out - 1
+			if time_out == 0:
+				print('Timeout3')
+				return 'ERROR'
+			frame['REG'] = self.get()
+			crc = self.crc_generate(crc, frame['REG'])
+			time_out = 0xFFFF
+			while(self.available() == 0 and time_out != 0 ):
+				time_out = time_out - 1
+			if time_out == 0:
+				print('Timeout4')
+				return 'ERROR'
+			frame['NUM'] = self.get()
+			crc = self.crc_generate(crc, frame['NUM'])
+			'''
+			for i in range(num):
+				time_out = 0xFFFF
+				while(self.available() == 0 and time_out != 0 ):
+					time_out = time_out - 1
+				if time_out == 0:
+					print('Timeout5')
+					return 'ERROR'
+				frame['DATA'].append(self.get())
+				crc = self.crc_generate(crc, frame['DATA'][i])
+			time_out = 0xFFFF
+			while(self.available() == 0 and time_out != 0 ):
+				time_out = time_out - 1
+			if time_out == 0:
+				print('Timeout6')
+				return 'ERROR'
+			frame['CRC1'] = self.get()
+			time_out = 0xFFFF
+			while(self.available() == 0 and time_out != 0 ):
+				time_out = time_out - 1
+			if time_out == 0:
+				print('Timeout7')
+				return 'ERROR'
+			frame['CRC2'] = self.get()
+			if(crc != ((frame['CRC1'] << 8) | frame['CRC2'])):
+				print('crc')
+				return 'ERROR'
+			return frame
+		else:
+			return 'ERROR'
+
 
 def main():
 	print('Master - Slave Connection')
 	slave = Modbus('/dev/ttyUSB0')
-	slave.send_frame(0x01, 0x02, 0x10, 0x01, 0x64)
-	#slave.send_frame(0x01, 0x02, 0x10, 0x01, 0x00)
+	#slave.send_frame(0x01, 0x02, 0x10, 0x01, 0x64)
+	slave.send_frame(0x00, 0x00, 0x30, 0x02, 0xC6, 0x01)
 	while True:
 		slave.get()
 

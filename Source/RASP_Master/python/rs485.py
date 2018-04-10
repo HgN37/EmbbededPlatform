@@ -53,7 +53,7 @@ class Modbus(RS485):
 			crc = self.crc_generate(crc, data[byte])
 		frame.append((crc & 0xFF00) >> 8)
 		frame.append((crc & 0x00FF))
-		# print(frame)
+		#print(frame)
 		self.send(frame)
 	def get_frame(self, num):
 		frame = {'ADDR':0, 'FUNC':0, 'REG':0, 'NUM':0, 'DATA':[], 'CRC1':0, 'CRC2':0}

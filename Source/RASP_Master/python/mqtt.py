@@ -53,8 +53,8 @@ class MQTT():
 		tx['DEV2'] = dev2
 		tx['DATA'] = {}
 		for i in range(len(data)):
-			tx['DATA'][str(i)] = data[i]
-		self.send(self.tpout, json.dumps(tx))
+			tx['DATA'][str(i+1)] = data[i]
+		self.send(json.dumps(tx))
 
 def main():
 	tpin = rasp_get_id() + '/m2s'

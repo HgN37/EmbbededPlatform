@@ -6,9 +6,9 @@
 #define REG_ADDR            0x30
 #define REG_OUTPUT          0x10
 #define REG_INPUT           0x20
-#define REG_ID              0xF0
+#define REG_VERSION         0xF0
 #define REG_HARDWARE        0xF1
-#define REG_VERSION         0xF2
+#define REG_ID              0xF2
 #define REG_STATUS          0xF3
 
 #define REG_ADDR_EEPROM     EEPROM_START_ADDR + 4

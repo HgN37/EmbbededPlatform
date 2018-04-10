@@ -6,7 +6,7 @@ void randomInit(void) {
     ADC1_Init(ADC1_CONVERSIONMODE_SINGLE,
               ADC1_CHANNEL_2,
               ADC1_PRESSEL_FCPU_D2,
-              ADC1_EXTTRIG_GPIO,
+              ADC1_EXTTRIG_TIM,
               DISABLE,
               ADC1_ALIGN_RIGHT,
               ADC1_SCHMITTTRIG_ALL,
@@ -16,6 +16,8 @@ void randomInit(void) {
 
 void randomDeInit(void) {
     ADC1_DeInit();
+    CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, DISABLE);
+    ADC1_Cmd(DISABLE);
 }
 
 uint8_t randomGenerate(void) {

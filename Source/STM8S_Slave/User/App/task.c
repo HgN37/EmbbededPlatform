@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SLAVE_RELAY
+//#define SLAVE_RELAY
+#define SLAVE_LIGHT
 
 frame_t frameTx;
 frame_t frameRx;
-uint8_t debug;
+uint8_t debug = 0;
+uint16_t debug2 = 0;
 
 void taskInit(void) {
     //! Set clock 16MHz
@@ -15,16 +17,11 @@ void taskInit(void) {
     CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
     CLK_AdjustHSICalibrationValue(CLK_HSITRIMVALUE_0);
 
-    #ifdef SLAVE_RELAY
-    deviceInit(DEVICE_1);
-    deviceOff(DEVICE_1);
-    debug = deviceRead(DEVICE_1);
-
-    #endif
     //! Init serial, ticker
     serialInit();
     tickerInit();
     enableInterrupts();
+    tickerDelayMs(500);
 
     //! Init led
     ledInit(LED_1);
@@ -43,17 +40,29 @@ void taskInit(void) {
     regWrite(REG_STATUS, randomGenerate()%32);
     randomDeInit();
 
-
+#ifdef SLAVE_RELAY
+    deviceInit(DEVICE_1);
+    deviceOff(DEVICE_1);
+    debug = deviceRead(DEVICE_1);
+#endif
+#ifdef SLAVE_LIGHT
+    bh1750Init();
+#endif
 
     // Hardware reg
 #ifdef SLAVE_RELAY
     regWrite(REG_HARDWARE, 0x01);
     regWrite(REG_ID, 0x01);
 #endif
+#ifdef SLAVE_LIGHT
+    regWrite(REG_HARDWARE, 0x05);
+    regWrite(REG_ID, 0x01);
+#endif
 
 }
 
 bool taskActivate(void) {
+    //debug2 = bh1750Read();
     if(EXIT_SUCCESS != serialGetFrame(&frameRx)) {
         serialClearFrame(&frameTx);
         serialClearFrame(&frameRx);
@@ -66,6 +75,9 @@ bool taskActivate(void) {
         return false;
     }
     if(frameRx.num != 2) {
+        return false;
+    }
+    if(frameRx.data[0] != regRead(REG_STATUS)) {
         return false;
     }
     regWrite(REG_ADDR, frameRx.data[1]);
@@ -95,6 +107,7 @@ void taskSerialCmd(void) {
         serialClearFrame(&frameRx);
         return;
     }
+    debug2++;
     //! Get function
     if(frameRx.func == SERIAL_FUNC_READ) {
         frameTx.addr = frameRx.addr;
@@ -134,6 +147,8 @@ void taskReg2Dev(void) {
     }
     //tickerDelayMs(1);
 #endif
+#ifdef SLAVE_LIGHT
+#endif
 }
 
 void taskDev2Reg(void) {
@@ -149,5 +164,11 @@ void taskDev2Reg(void) {
         regWrite(0x10, 0x00);
         regWrite(0x11, 0x00);
     }
+#endif
+#ifdef SLAVE_LIGHT
+    uint16_t lux;
+    lux = bh1750Read();
+    regWrite(0x10, (uint8_t)(lux>>8));
+    regWrite(0x11, (uint8_t)(lux));
 #endif
 }

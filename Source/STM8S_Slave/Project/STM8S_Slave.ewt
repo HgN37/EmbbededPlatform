@@ -2132,6 +2132,9 @@
         <group>
             <name>Driver</name>
             <file>
+                <name>$PROJ_DIR$\..\User\Driver\bh1750.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\User\Driver\button.c</name>
             </file>
             <file>

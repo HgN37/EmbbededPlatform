@@ -1,0 +1,1 @@
+{'1':{'Type':'Relay','Name':'Relay Opto 5VDC','Detail':'Simple 5V relay'},'5':{'Type':'Lux','Name':'BBH1750','Detail':'Simple light sensor'}}

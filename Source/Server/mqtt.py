@@ -1,5 +1,4 @@
 import paho.mqtt.client as mqtt
-from rasp_info import rasp_get_id
 import json
 import ast
 

@@ -1,0 +1,19 @@
+import socket
+
+server = socket.socket()
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(('', 33333))
+server.listen(5)
+
+
+    while True:
+        client, addr = server.accept()
+        while True:
+            print('Connection from {0}: {1}'.format(addr[0], addr[1]))
+            client.send('Ok\r\n'.encode('utf-8')            data = ''
+            while data.decode('utf-8') == '':
+                data = client.recv(1024)
+            client.sendall(data)
+            print(data.decode('utf-8'))
+            client.send('\r\n'.encode('utf-8'))
+        #client.close()

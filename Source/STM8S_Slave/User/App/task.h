@@ -10,6 +10,8 @@
 #include "ticker.h"
 #include "defineApp.h"
 #include "random.h"
+#include "i2c.h"
+#include "bh1750.h"
 
 void taskInit(void);
 bool taskActivate(void);

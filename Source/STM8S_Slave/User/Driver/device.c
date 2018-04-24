@@ -83,5 +83,13 @@ void deviceOff(uint8_t pdevice) {
 uint8_t deviceRead(uint8_t pdevice) {
     uint16_t vPort = _devicePort[pdevice];
     uint8_t vPin = _devicePin[pdevice];
-    return gpioReadPin(vPort, vPin);
+    GPIO_TypeDef *GPIOx;
+    GPIOx = (GPIO_TypeDef*)vPort;
+    if((GPIO_ReadOutputData(GPIOx)&vPin) == 0x00) {
+        return GPIO_LOW;
+    }
+    else {
+        return GPIO_HIGH;
+    }
+    //return gpioReadPin(vPort, vPin);
 }

@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {'FILE': 'DEVLIST', 'RASPID': '000000008a8c7394'}
+=======
+{'1': {'HARDWARE': 1, 'ID': 1}, 'RASPID': '000000008a8c7394', 'FILE': 'DEVLIST'}
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd

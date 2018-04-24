@@ -54,6 +54,7 @@ class threadDeviceManager(threading.Thread):
 			for dev in dev2remove:
 				devlist.pop(dev, None)
 				devdata.pop(dev, None)
+<<<<<<< HEAD
 			print('Done')
 			'''
 			print('Start scanning exist device...')
@@ -64,6 +65,19 @@ class threadDeviceManager(threading.Thread):
 				time.sleep(0.3)
 				frame = modbus.get_frame(2)
 				if frame == 'ERROR':
+=======
+			print('Start scanning exist device...')
+			for taddr in range(32):
+				caddr = taddr + 1
+				modbus.send_frame(caddr, 0x01, 0xF1, 0x02)
+				time.sleep(0.0001)
+				frame = modbus.get_frame(2)
+				if frame == 'ERROR':
+					'''
+					if str(caddr) in devlist.keys():
+						devlist.pop(str(caddr), None)
+					'''
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 					pass
 				else:
 					print('  + Found existed device at addr ', caddr)
@@ -76,7 +90,10 @@ class threadDeviceManager(threading.Thread):
 						#devdata[str(caddr)].append(0)
 						#devdataLock.release()
 			print('Done')
+<<<<<<< HEAD
 			'''
+=======
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 			print('Start scanning new device')
 			addr = 1
 			for rand in range(32):
@@ -84,9 +101,14 @@ class threadDeviceManager(threading.Thread):
 					addr = 0
 				while str(addr) in devlist.keys():
 					addr = addr + 1
+<<<<<<< HEAD
 				print('Scanning random num {} for addr {}'.format(rand, addr))
 				modbus.send_frame(0x00, 0x00, 0x30, 0x02, rand, addr)
 				time.sleep(0.01)
+=======
+				modbus.send_frame(0x00, 0x00, 0x30, 0x02, rand, addr)
+				time.sleep(0.001)
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 				frame = modbus.get_frame(2)
 				if frame == 'ERROR':
 					pass
@@ -153,14 +175,20 @@ class threadMqttCommand(threading.Thread):
 							rulelist[cmd['DATA']['4']]['DATA']['2'] = cmd['DATA']['2']
 							rulelist[cmd['DATA']['4']]['DATA']['3'] = cmd['DATA']['3']
 							rulelistLock.release()
+<<<<<<< HEAD
 							#mqtt.send_frame(cmd['ADDR'], cmd['FUNC'], cmd['DEV1'], cmd['DEV2'], cmd['DATA']['1'], cmd['DATA']['2'], cmd['DATA']['3'], cmd['DATA']['4'])
+=======
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 							#print(rulelist)
 						elif(cmd['FUNC'] == 'DELRULE'):
 							print('GET DELRULE FUNC: \r\n' + str(cmd))
 							rulelistLock.acquire()
 							rulelist.pop(cmd['DATA']['4'], None)
 							rulelistLock.release()
+<<<<<<< HEAD
 							#mqtt.send_frame(cmd['ADDR'], cmd['FUNC'], cmd['DEV1'], cmd['DEV2'], cmd['DATA']['1'], cmd['DATA']['2'], cmd['DATA']['3'], cmd['DATA']['4'])
+=======
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 					res = modbus.get_frame(2)
 					timeout_start = datetime.datetime.now()
 					timeout = (datetime.datetime.now() - timeout_start).seconds
@@ -183,9 +211,13 @@ class threadUpdateData(threading.Thread):
 		threading.Thread.__init__(self)
 	def run(self):
 		while True:
+<<<<<<< HEAD
 			mqtt.send_frame(rasp_info.rasp_get_id(), 'UPDATE', '0', 'FF', 'FF', 'FF', 'FF', 'FF')
 			devdataLock.acquire()
 			print('Get data...')
+=======
+			devdataLock.acquire()
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 			for addr, value in devdata.items():
 				if addr == 'FILE':
 					continue
@@ -201,9 +233,14 @@ class threadUpdateData(threading.Thread):
 					timeout = (datetime.datetime.now() - timeout_start).seconds
 				rs485Lock.release()
 				if res != 'ERROR':
+<<<<<<< HEAD
 					print(res)
 					data = res['DATA'][0] << 8 | res['DATA'][1]
 					print(data)
+=======
+					data = res['DATA'][0] << 8 | res['DATA'][1]
+					#print(data)
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 					if(len(devdata) > 100):
 						del dev[0]
 					devdata[addr].append(data)
@@ -285,7 +322,10 @@ class threadUpdateFile(threading.Thread):
 		global devlist
 		global rulelist
 		need_update = False
+<<<<<<< HEAD
 		start_time = datetime.datetime.now()
+=======
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 		while True:
 			#print('Check file')
 			devlistLock.acquire(1)
@@ -310,9 +350,12 @@ class threadUpdateFile(threading.Thread):
 				f = open('./devdata.txt', 'w')
 				f.write(str(devdata))
 				f.close()
+<<<<<<< HEAD
 			if (datetime.datetime.now() - start_time).seconds > 60:
 				start_time = datetime.datetime.now()
 				need_update = True
+=======
+>>>>>>> 58c0732ccba179373605a6ae3085b5bd6a8fcfbd
 			devlistLock.release()
 			rulelistLock.release()
 			devdataLock.release()

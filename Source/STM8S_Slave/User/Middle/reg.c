@@ -41,19 +41,19 @@ void regWrite(uint8_t pAddr, uint8_t pData) {
         REG_CONFIG.address = pData;
         eepromWrite(REG_ADDR_EEPROM, &REG_CONFIG.address, 1);
     }
-    else if(pAddr == 0xF0) {
+    else if(pAddr == REG_ID) {
         REG_RO.id = pData;
         eepromWrite(REG_ID_EEPROM, &REG_RO.id, 1);
     }
-    else if(pAddr == 0xF1) {
+    else if(pAddr == REG_HARDWARE) {
         REG_RO.hardware = pData;
         eepromWrite(REG_HARDWARE_EEPROM, &REG_RO.hardware, 1);
     }
-    else if(pAddr == 0xF2) {
+    else if(pAddr == REG_VERSION) {
         REG_RO.version = pData;
         eepromWrite(REG_VERSION_EEPROM, &REG_RO.version, 1);
     }
-    else if(pAddr == 0xF3) {
+    else if(pAddr == REG_STATUS) {
         REG_RO.status = pData;
         eepromWrite(REG_STATUS_EEPROM, &REG_RO.status, 1);
     }

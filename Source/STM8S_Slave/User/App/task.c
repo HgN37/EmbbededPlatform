@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SLAVE_RELAY
+//#define SLAVE_RELAY
+#define SLAVE_LIGHT
 
 frame_t frameTx;
 frame_t frameRx;
+uint8_t debug = 0;
+uint16_t debug2 = 0;
 
 void taskInit(void) {
     //! Set clock 16MHz
@@ -18,16 +21,13 @@ void taskInit(void) {
     serialInit();
     tickerInit();
     enableInterrupts();
+    tickerDelayMs(500);
 
     //! Init led
     ledInit(LED_1);
 
     //! Init random
     randomInit();
-
-#ifdef SLAVE_RELAY
-    deviceInit(DEVICE_1);
-#endif
 
     //! Clear serial frame
     serialClearFrame(&frameTx);
@@ -37,17 +37,32 @@ void taskInit(void) {
 
     // Unactive addr = 0
     regWrite(REG_ADDR, 0x00);
-    regWrite(REG_STATUS, randomGenerate());
+    regWrite(REG_STATUS, randomGenerate()%32);
     randomDeInit();
+
+#ifdef SLAVE_RELAY
+    deviceInit(DEVICE_1);
+    deviceOff(DEVICE_1);
+    debug = deviceRead(DEVICE_1);
+#endif
+#ifdef SLAVE_LIGHT
+    bh1750Init();
+#endif
 
     // Hardware reg
 #ifdef SLAVE_RELAY
     regWrite(REG_HARDWARE, 0x01);
+    regWrite(REG_ID, 0x01);
+#endif
+#ifdef SLAVE_LIGHT
+    regWrite(REG_HARDWARE, 0x05);
+    regWrite(REG_ID, 0x01);
 #endif
 
 }
 
 bool taskActivate(void) {
+    //debug2 = bh1750Read();
     if(EXIT_SUCCESS != serialGetFrame(&frameRx)) {
         serialClearFrame(&frameTx);
         serialClearFrame(&frameRx);
@@ -72,7 +87,7 @@ bool taskActivate(void) {
     frameTx.num = 2;
     frameTx.data = (uint8_t*)malloc(frameTx.num);
     frameTx.data[0] = regRead(REG_HARDWARE);
-    frameTx.data[1] = regRead(REG_VERSION);
+    frameTx.data[1] = regRead(REG_ID);
     serialSendFrame(&frameTx);
     serialClearFrame(&frameTx);
     serialClearFrame(&frameRx);
@@ -88,8 +103,11 @@ void taskSerialCmd(void) {
     }
     //! Check Addr
     if(frameRx.addr != regRead(REG_ADDR)) {
+        serialClearFrame(&frameTx);
+        serialClearFrame(&frameRx);
         return;
     }
+    debug2++;
     //! Get function
     if(frameRx.func == SERIAL_FUNC_READ) {
         frameTx.addr = frameRx.addr;
@@ -107,6 +125,10 @@ void taskSerialCmd(void) {
         frameTx.data = (uint8_t*)malloc(frameTx.num);
         for(count = 0; count < frameRx.num; count++) {
             regWrite(frameRx.reg + count, frameRx.data[count]);
+        }
+        taskReg2Dev();
+        taskDev2Reg();
+        for(count = 0; count < frameRx.num; count++) {
             frameTx.data[count] = regRead(frameRx.reg + count);
         }
     }
@@ -116,69 +138,37 @@ void taskSerialCmd(void) {
 }
 
 void taskReg2Dev(void) {
-#ifdef SLAVE_SENSOR
-#endif
 #ifdef SLAVE_RELAY
-    uint8_t count = 0;
-    uint8_t relay[4] = {
-        DEVICE_1,
-        DEVICE_2,
-        DEVICE_3,
-        DEVICE_4
-    };
-    for(count = 0; count < 2; count++) {
-        if(regRead(0x10 + count) == 0x64) {
-            deviceOn(relay[count]);
-        }
-        else if(regRead(0x10 + count) == 0x00) {
-            deviceOff(relay[count]);
-        }
+    if(regRead(0x11) == 0x64) {
+        deviceOn(DEVICE_1);
     }
+    else if(regRead(0x11) == 0x00) {
+        deviceOff(DEVICE_1);
+    }
+    //tickerDelayMs(1);
+#endif
+#ifdef SLAVE_LIGHT
 #endif
 }
 
 void taskDev2Reg(void) {
-#ifdef SLAVE_SENSOR
-    //! Update water sensor
-    if(GPIO_HIGH == buttonReadLevel(WATER_SENSOR)) {
-        regWrite(0x22, 0x00);
-        regWrite(0x23, 0x64);
-    }
-    else {
-        regWrite(0x22, 0x00);
-        regWrite(0x23, 0x00);
-    }
-    //! Update DS18B20
-    static uint32_t _time = 0;
-    if((tickerMillis() - _time) > 10000) {
-        float t = ds18b20ReadTemp();
-        if(200 != t) {
-            uint16_t reg_t = (uint16_t)(t * 100.0);
-            regWrite(0x20, (uint8_t)(reg_t >> 8));
-            regWrite(0x21, (uint8_t)(reg_t >> 0));
-        }
-        _time = tickerMillis();
-    }
-#endif
 #ifdef SLAVE_RELAY
     //! Update relay status
-    uint8_t count = 0;
-    uint8_t relay[4] = {
-        DEVICE_1,
-        DEVICE_2,
-        DEVICE_3,
-        DEVICE_4
-    };
-    for(count = 0; count < 2; count++) {
-        relay[count] = deviceRead(relay[count]);
+    uint8_t stt;
+    stt = deviceRead(DEVICE_1);
+    if(stt == GPIO_LOW) {
+        regWrite(0x10, 0x00);
+        regWrite(0x11, 0x64);
     }
-    for(count = 0; count < 2; count++) {
-        if(relay[count] == GPIO_LOW) {
-            regWrite(0x10 + count, 0x64);
-        }
-        else {
-            regWrite(0x10 + count, 0x00);
-        }
+    else {
+        regWrite(0x10, 0x00);
+        regWrite(0x11, 0x00);
     }
+#endif
+#ifdef SLAVE_LIGHT
+    uint16_t lux;
+    lux = bh1750Read();
+    regWrite(0x10, (uint8_t)(lux>>8));
+    regWrite(0x11, (uint8_t)(lux));
 #endif
 }
